@@ -1,6 +1,6 @@
 
 import pandas as pd
-# import numpy as np
+import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
@@ -31,13 +31,17 @@ corr_series = corr_matrix.unstack().sort_values(ascending=False)
 corr_pairs = corr_series[corr_series != 1]
 
 # выбор двух признаков с наибольшей взаимной корреляцией
-top_corr_pairs = corr_pairs.head(2)
+sorted_pairs = corr_pairs.abs().sort_values(ascending=False)
+top_corr_pairs = sorted_pairs.head(2)
+#top_corr_pairs = corr_pairs.head(2)
+#sorted_pairs = sorted(top_corr_pairs.items(), key=lambda x: abs(x[1]), reverse=True)
 
 # вывод на экран и предложение выбрать признаки
 print("Выберите два признака с наибольшей взаимной корреляцией:")
 for i, (pair, corr) in enumerate(top_corr_pairs.items()):
+#for i, (pair, corr) in enumerate(sorted_pairs):
     feature1, feature2 = pair
-    print(f"{i+1}. {feature1} и {feature2} (коэффициент корреляции: {corr:.2f})")
+    print(f"{i+1}. {feature1} и {feature2} (коэффициент корреляции: {abs(corr):.2f})")
 
 # построение графика
 plt.scatter(df[feature1], df[feature2])
@@ -65,16 +69,25 @@ coef = model.coef_
 intercept = model.intercept_
 print(coef)
 print(intercept)
+#Получение предсказаний на тестовой выборке
 Y_predict = model.predict(X_test)
 
 plt.scatter(X_test, Y_test, color="black")
 plt.plot(X_test, Y_predict, color="blue", linewidth=3)
 plt.show()
 
+# сравниваем предсказываемые значения с с фактическими из тестовой
+# средняя квадратичная ошибка
 mse = mean_squared_error(Y_test, Y_predict)
+#Средняя абсолютная ошибка
 mae = mean_absolute_error(Y_test, Y_predict)
 
 print("Оценка модели:")
 print("Коэффициент детерминации (R^2):", score)
 print("Среднеквадратичная ошибка (MSE):", mse)
 print("Средняя абсолютная ошибка (MAE):", mae)
+
+# Вводимое значение x
+X_input = int(input())
+Y_input_predict = model.predict(np.array([X_input]).reshape(-1, 1))
+print(Y_input_predict)

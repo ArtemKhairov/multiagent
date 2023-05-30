@@ -19,6 +19,8 @@ agg_clustering = AgglomerativeClustering(n_clusters=4)
 agg_labels = agg_clustering.fit_predict(X)
 
 # DBSCAN
+# eps - радиус точек
+# min_sample - минимальное количество точек
 dbscan = DBSCAN(eps=0.5, min_samples=5)
 dbscan_labels = dbscan.fit_predict(X)
 

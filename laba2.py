@@ -7,30 +7,40 @@ from warnings import simplefilter
 # игнорировать все предупреждения о будущих изменениях
 simplefilter(action='ignore', category=FutureWarning)
 
-# df = pd.read_csv('./datasets/transfusion.data.csv')
-df = pd.read_csv('./datasets/r5.csv')
-df = df.drop(['id'], axis=1)
-df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+df = pd.read_csv('./datasets/transfusion.data.csv')
+#df = pd.read_csv('./datasets/r5.csv')
+#df = df.drop(['id'], axis=1)
+#df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 # Построение матрицы корреляции
-correlation_matrix = df.corr()
-# Находим максимальное значение корреляции и его индексы
-# преобразование матрицы корреляций в Series
-corr_series = correlation_matrix.unstack().sort_values(ascending=False)
-
-# отбор значений с корреляцией между разными признаками
-corr_pairs = corr_series[corr_series != 1]
-
-# выбор двух признаков с наибольшей взаимной корреляцией
-sorted_pairs = corr_pairs.abs().sort_values(ascending=False)
-top_corr_pairs = sorted_pairs.head(2)
-# print(top_corr_pairs)
-for i, (pair, corr) in enumerate(top_corr_pairs.items()):
-    X, Y = pair
-    print(f"{i+1}. {X} и {Y} (коэффициент корреляции: {abs(corr):.2f})")
-# first_feature = input('Select first features with the highest cross-correlation value:')
-# X = 'Recency'
+#df = df.drop(['id'], axis=1)
+#df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+# Построение матрицы корреляции
+X = 'Recency'
 # second_feature = input('Select second features with the highest cross-correlation value:')
-# Y = 'Frequency'
+Y = 'Frequency'
+
+USER_START_CHOICE = int(input())
+USER_STOP_CHOICE = int(input())
+USER_STEP_CHOICE = int(input())
+
+davies_bouldin_score_data = [[], []]
+j = 1
+for i in range(USER_START_CHOICE, USER_STOP_CHOICE + 1, USER_STEP_CHOICE):
+    dbscan = DBSCAN(eps=i)
+    model = dbscan.fit_predict(df[[X, Y]])
+    j =j+1
+    davies_bouldin_score_data[0].append(j)
+    davies_bouldin_score_data[1].append(davies_bouldin_score(df[[X, Y]], model))
+
+davies_bouldin_figure = plt.plot(davies_bouldin_score_data[0], davies_bouldin_score_data[1])
+plt.show()
+
+USER_NUMBER_OF_EPS_CHOISE = int(input())
+
+dbscan = DBSCAN(eps=USER_NUMBER_OF_EPS_CHOISE)
+dbscan.fit_predict(df[[X, Y]])
+figure = plt.scatter(df[X], df[Y], c=dbscan.labels_, cmap='rainbow')
+plt.show()
 
 MAX_NUMBER_OF_CLASTERS = int(input())
 
@@ -76,12 +86,16 @@ figure = plt.scatter(df[X], df[Y], c=agglomerative.labels_, cmap='rainbow')
 plt.show()
 
 
-USER_NUMBER_OF_EPS_CHOISE = int(input())
+davies_bouldin_score_data = [[], []]
 
-# Кластеризация методом DBSCAN
-dbscan = DBSCAN(eps=USER_NUMBER_OF_EPS_CHOISE)
-dbscan.fit_predict(df[[X, Y]])
-figure = plt.scatter(df[X], df[Y], c=dbscan.labels_, cmap='rainbow')
+for i in range(2, MAX_NUMBER_OF_CLASTERS + 1):
+    agglomerative = AgglomerativeClustering(n_clusters=i)
+    model = agglomerative.fit_predict(df[[X, Y]])
+    davies_bouldin_score_data[0].append(i)
+    davies_bouldin_score_data[1].append(davies_bouldin_score(df[[X, Y]], model))
+
+davies_bouldin_figure = plt.plot(davies_bouldin_score_data[0], davies_bouldin_score_data[1])
 plt.show()
+
 
 
